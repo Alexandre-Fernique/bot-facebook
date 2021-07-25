@@ -1,6 +1,6 @@
 "use strict";
 
-var utils = require("facebook-chat-api/utils");
+var utils = require("../utils");
 var log = require("npmlog");
 
 module.exports = function(defaultFuncs, api, ctx) {
