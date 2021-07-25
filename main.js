@@ -1,3 +1,4 @@
+const PORT = process.env.PORT || 3000;
 const login = require("facebook-chat-api");
 
 // Create simple echo bot
