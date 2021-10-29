@@ -4,7 +4,7 @@ ___
 
 * **Mot de passe** : &botaubergine
 ### En cas de problème appstate.json
-Téléchargez depuis Brave avec J2TEAM cookie les cookies de connexions de Facebook dans appstate.json cookies:[...]
+Téléchargez depuis Brave ou Chrome avec l'extension J2TEAM cookie les cookies de connexions de Facebook et mettre dans appstate.json: "cookies:[...]"
 
 Remplace ensuite toute les occurences de "name" par "key"
 
