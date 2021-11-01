@@ -10,5 +10,5 @@ Remplace ensuite toute les occurences de "name" par "key"
 ___
 
 ### Api
-[facbook-chat-api](https://github.com/Schmavery/facebook-chat-api)
+[facebook-chat-api](https://github.com/Schmavery/facebook-chat-api)
 
