@@ -24,7 +24,7 @@ async function addReaction(page, message) {
 
 (async () => {
     const browser = await puppeteer.launch({
-        headless: process.env.HEADLESS |"true",
+        headless: process.env.HEADLESS == "true" | true,
     });
     const page = await browser.newPage();
     await page.setViewport({
