@@ -1,53 +1,86 @@
+const dotenv = require('dotenv');
+dotenv.config()
+const puppeteer = require('puppeteer');
+const fs = require('fs');
 
-const login = require("facebook-chat-api");
 
-// Create simple echo bot
-const fs = require("fs");
-var hello=["Bonjour","Bonsoir","Salut","Hello","Yo","Coucou","bonjour","bonsoir","salut","hello","yo","coucou"]
-login({appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8'))}, (err, api) => {
-    if(err) return console.error(err);
-    // Here you can use the api
-    api.listenMqtt((err, message) => {
-        if(message.mentions!=undefined)
-        {
-            if(Object.keys(message.mentions).indexOf("100064795671628")!=-1){
-                console.log(message.mentions);
-                api.sendMessage("TKT - Des Brocolis\n https://www.youtube.com/watch?v=xVL29dVdLN4", message.threadID);
-            }
+async function addReaction(page, message) {
+    try {
+        if (await message.$('[alt="🍆"]')) {
+            /*console.log('Aubergine reaction found');*/
+        }else {
+            await message.hover()
+            await message.waitForSelector('[aria-label="Réagir"]')
+            const reaction = await message.$('[aria-label="Réagir"]')
+            await reaction.click({button:'left',delay: 100})
+            await page.waitForSelector("[aria-label='Réactions aux messages']")
+            const barre_message = await page.$('[aria-label="Réactions aux messages"]')
+            await (await barre_message.$('[tabindex="0"]')).click()
         }
+    } catch (error) {
+        console.log(error)
+    }
+}
 
-
-        api.setMessageReaction(decodeURIComponent("🍆"),message.messageID,(err)=>{
-            if(err) return console.error(err);
-            else {
-                if(message.body)
-                console.log("Reaction send to "+ message.body);
-            }
-        })
-        if(message.body!=undefined){
-            for(let val of hello){
-
-                if(message.body.search(val)!==-1 ) {
-                    console.log("Envoi coucou");
-                    var msg = {attachment: fs.createReadStream(__dirname + '/assets/Coucou2.mp3')}
-                    api.sendMessage(msg, message.threadID);
-                }
-            }
-            if(message.body.search("Chante")!=-1 ||message.body.search("chante")!=-1){
-                var msg={
-                    body: "Je chante pour toi",
-                    attachment:fs.createReadStream(__dirname + '/assets/brocolis.mp3')
-                }
-                console.log("Envoi chante");
-                api.sendMessage(msg, message.threadID);
-
-            }
-
-        }
-
-
+(async () => {
+    const browser = await puppeteer.launch({
+        headless: process.env.HEADLESS |"true",
     });
-});
+    const page = await browser.newPage();
+    await page.setViewport({
+        width: 1920,
+        height: 900
+    })
+    const cookies = JSON.parse(fs.readFileSync('./cookies.json', 'utf8'));
+    for (const cookie of cookies) {
+        await page.setCookie(cookie);
+    }
+    await page.goto('https://www.messenger.com',{waitUntil: 'networkidle0'});
+    if(cookies){
+        console.log('Connected to messenger')
+    }
+    else {
+        console.log('Not Connected to messenger')
+        const email_field = await page.$('#email');
+        console.log(process.env.EMAIL)
+        console.log(process.env.PASSWORD)
+        await email_field.type(process.env.EMAIL);
+        await page.screenshot({path: 'email.png'});
+        const password_field = await page.$('#pass');
+        await password_field.type(process.env.PASSWORD);
+        await (await page.$('[type="checkbox"]')).click();
+        await page.screenshot({path: 'password.png'});
+        const button_login = await page.$('#loginbutton');
+        await button_login.click();
+    }
+
+    await page.screenshot({path: 'click.png'});
+
+    await page.waitForSelector(".hnhda86s")
+    const test = await page.$(".hnhda86s")
+    await test.click()
+    await page.waitForSelector("[data-testid=message-container]")
+    await page.waitForTimeout(2000)
+    fs.writeFileSync('cookies.json', JSON.stringify(await page.cookies()))
+    const message = await page.$$("[data-testid=message-container]")
+    for (let i = 0; i < message.length; i++) {
+        await addReaction(page, message[i])
+    }
+    while (true){
+        await page.waitForSelector(".hnhda86s", {timeout: 0})
+        const test = await page.$(".hnhda86s")
+        await test.click()
+        console.log("Message detected")
+        await page.waitForSelector("[data-testid=message-container]")
+        await page.waitForTimeout(2000)
+        const message = await page.$$("[data-testid=message-container]")
+        for (let i = 0; i < message.length; i++) {
+            await addReaction(page, message[i])
+        }
+        await page.goto('https://www.messenger.com/new')
+
+    }
+})();
 
 
 

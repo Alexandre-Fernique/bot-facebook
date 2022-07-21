@@ -2,16 +2,20 @@
   "name": "bot",
   "version": "1.0.0",
   "description": "",
-  
-
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
   },
+  "engines": {
+    "node": "16"
+  },
+  "main": "main.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
-
   "dependencies": {
-    "facebook-chat-api": "^1.8.0"
-  }
+    "dotenv": "^16.0.1",
+    "puppeteer": "^15.4.0"
+  },
+  "private": true
 }
