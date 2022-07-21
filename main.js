@@ -31,53 +31,53 @@ async function addReaction(page, message) {
         width: 1920,
         height: 900
     })
-    const cookies = JSON.parse(fs.readFileSync('./cookies.json', 'utf8'));
-    for (const cookie of cookies) {
-        await page.setCookie(cookie);
-    }
-    await page.goto('https://www.messenger.com',{waitUntil: 'networkidle0'});
-    if(cookies){
+    try {
+        const cookies = JSON.parse(fs.readFileSync('./cookies.json', 'utf8'));
+        for (const cookie of cookies) {
+            await page.setCookie(cookie);
+        }
+        await page.goto('https://www.messenger.com',{waitUntil: 'networkidle0'});
         console.log('Connected to messenger')
-    }
-    else {
+    }catch (error) {
+        await page.goto('https://www.messenger.com',{waitUntil: 'networkidle0'});
         console.log('Not Connected to messenger')
         const email_field = await page.$('#email');
-        console.log(process.env.EMAIL)
-        console.log(process.env.PASSWORD)
         await email_field.type(process.env.EMAIL);
-        await page.screenshot({path: 'email.png'});
         const password_field = await page.$('#pass');
         await password_field.type(process.env.PASSWORD);
         await (await page.$('[type="checkbox"]')).click();
-        await page.screenshot({path: 'password.png'});
         const button_login = await page.$('#loginbutton');
         await button_login.click();
+        await page.waitForNetworkIdle()
     }
 
-    await page.screenshot({path: 'click.png'});
 
-    await page.waitForSelector(".hnhda86s")
-    const test = await page.$(".hnhda86s")
-    await test.click()
-    await page.waitForSelector("[data-testid=message-container]")
-    await page.waitForTimeout(2000)
-    fs.writeFileSync('cookies.json', JSON.stringify(await page.cookies()))
-    const message = await page.$$("[data-testid=message-container]")
-    for (let i = 0; i < message.length; i++) {
-        await addReaction(page, message[i])
+    try {
+        fs.writeFileSync('cookies.json', JSON.stringify(await page.cookies()))
+        console.log('Cookies saved')
+    }catch (error) {
+        console.log('Cookies not saved')
     }
+
+    await page.goto('https://www.messenger.com/new',{waitUntil: 'networkidle0'});
+
     while (true){
-        await page.waitForSelector(".hnhda86s", {timeout: 0})
-        const test = await page.$(".hnhda86s")
-        await test.click()
-        console.log("Message detected")
-        await page.waitForSelector("[data-testid=message-container]")
-        await page.waitForTimeout(2000)
-        const message = await page.$$("[data-testid=message-container]")
-        for (let i = 0; i < message.length; i++) {
-            await addReaction(page, message[i])
+        try {
+            await page.waitForSelector(".hnhda86s", {timeout: 0})
+            const test = await page.$(".hnhda86s")
+            await test.click()
+            console.log("Message detected")
+            await page.waitForSelector("[data-testid=message-container]")
+            await page.waitForTimeout(2000)
+            const message = await page.$$("[data-testid=message-container]")
+            for (let i = 0; i < message.length; i++) {
+                await addReaction(page, message[i])
+            }
+            await page.goto('https://www.messenger.com/new')
+        }catch (error) {
+            console.log(error)
         }
-        await page.goto('https://www.messenger.com/new')
+
 
     }
 })();
